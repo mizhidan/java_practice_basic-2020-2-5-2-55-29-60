@@ -33,7 +33,7 @@ public class App {
     }
     double halfPrice = 0d;
     halfPrice = getHalfPrice(selectedIds,selectedCounts);
-    if (originalPrice - halfPrice == 0) {
+    if (halfPrice > overThirtyPrice) {
       if (overThirtyPrice != 0) {
         saleStrategy = 1;
       }
@@ -56,7 +56,7 @@ public class App {
       default:
         return "";
     }
-    String menuInfo = getMenu(selectedIds,selectedCounts,finalPrice,discountPrice,saleStrategy);
+    String menuInfo = calcMenu(selectedIds,selectedCounts,finalPrice,discountPrice,saleStrategy);
     return menuInfo;
   }
 
@@ -87,6 +87,7 @@ public class App {
     String[] halfPriceIds = getHalfPriceIds();
     double[] selectedPrices = new double[selectedIds.length];
     double[] allPrices = getItemPrices();
+    int[] intSelectedCounts = getIntCounts(selectedCounts);
     double halfPrice = 0d;
     for (int allIndex = 0; allIndex < allIds.length; ++allIndex) {
       for (int selectedIndex = 0; selectedIndex < selectedIds.length; ++selectedIndex) {
@@ -102,8 +103,8 @@ public class App {
         }
       }
     }
-    for (double value : selectedPrices) {
-      halfPrice += value;
+    for (int index = 0; index < selectedCounts.length; ++index) {
+      halfPrice += intSelectedCounts[index] * selectedPrices[index];
     }
     return halfPrice;
   }
@@ -133,17 +134,40 @@ public class App {
     }
     String selectedInfo = "";
     for (int index = 0; index < selectedNames.length; ++index) {
-      selectedInfo += selectedNames[index] + " x " + selectedCounts[index] + "=" + intSelectedCounts[index] *
-              selectedPrices[index] + "\n";
+      selectedInfo += selectedNames[index] + " x " + selectedCounts[index] + " = " + (int)(intSelectedCounts[index] *
+              selectedPrices[index]) + "元\n";
     }
+    String sumPrice = "总计：" + (int)finalPrice + "元\n";
+
     switch (saleStrategy) {
       case 0:
         menuInfo ="============= 订餐明细 =============\n"
-                + "肉夹馍 x 4 = 24元\n"
+                + selectedInfo
                 + "-----------------------------------\n"
-                + "总计：24元\n"
+                + sumPrice
+                + "===================================";
+        break;
+      case 1:
+        String discountInfo = "使用优惠:\n" + "满30减6元，省6元\n";
+        menuInfo ="============= 订餐明细 =============\n"
+                + selectedInfo
+                + "-----------------------------------\n"
+                + discountInfo
+                + "-----------------------------------\n"
+                + sumPrice
+                + "===================================";
+        break;
+      case 2:
+        String newDiscountInfo = "使用优惠:\n" + "指定菜品半价(黄焖鸡，凉皮)，省" + (int)discountPrice + "元\n";
+        menuInfo ="============= 订餐明细 =============\n"
+                + selectedInfo
+                + "-----------------------------------\n"
+                + newDiscountInfo
+                + "-----------------------------------\n"
+                + sumPrice
                 + "===================================";
     }
+    return menuInfo;
   }
 
   public static int[] getIntCounts(String[] prices) {
